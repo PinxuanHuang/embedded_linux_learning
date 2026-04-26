@@ -1,10 +1,12 @@
-obj-m: main.o
+obj-m:= main.o
 
 MAKE=make
-ARCH=arm
+ARCH=arm64
 CROSS_COMPILE=arm-linux-gnueabihf-
 KERN_DIR=/
 HOST_KERN_DIR=/lib/modules/$(shell uname -r)/build/
+PWD=$(shell pwd)
+
 all:
 	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERN_DIR) M=$(PWD) modules
 clean:
