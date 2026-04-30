@@ -25,7 +25,7 @@ struct pcdev_private_data
     const char *serial_number;
     int perm;
     struct cdev cdev;
-}
+};
 
 struct pcdrv_private_data
 {
@@ -36,7 +36,7 @@ struct pcdrv_private_data
     struct class *class_pcd;
     struct device *device_pcd;
     struct pcdev_private_data pcdev_data[NO_OF_DEVICES];
-}
+};
 
 struct pcdrv_private_data pcdrv_data =
     {
@@ -45,15 +45,15 @@ struct pcdrv_private_data pcdrv_data =
 
             [0] = {
                 .buffer = device_buffer_pcdev1,
-                .size = MEM_SIZE_MAX_PCDEV1,
+                .size = DEV_MEM_SIZE_PCDEV1,
                 .serial_number = "PCDEV1XYZ123",
-                .perm = RDONLY},
+                .perm = O_RDONLY},
 
-            [1] = {.buffer = device_buffer_pcdev2, .size = MEM_SIZE_MAX_PCDEV2, .serial_number = "PCDEV2XYZ123", .perm = WRONLY},
+            [1] = {.buffer = device_buffer_pcdev2, .size = DEV_MEM_SIZE_PCDEV2, .serial_number = "PCDEV2XYZ123", .perm = O_WRONLY},
 
-            [2] = {.buffer = device_buffer_pcdev3, .size = MEM_SIZE_MAX_PCDEV3, .serial_number = "PCDEV3XYZ123", .perm = RDWR},
+            [2] = {.buffer = device_buffer_pcdev3, .size = DEV_MEM_SIZE_PCDEV3, .serial_number = "PCDEV3XYZ123", .perm = O_RDWR},
 
-            [3] = {.buffer = device_buffer_pcdev4, .size = MEM_SIZE_MAX_PCDEV4, .serial_number = "PCDEV4XYZ123", .perm = RDWR}
+            [3] = {.buffer = device_buffer_pcdev4, .size = DEV_MEM_SIZE_PCDEV4, .serial_number = "PCDEV4XYZ123", .perm = O_RDWR}
 
         }};
 
@@ -61,7 +61,7 @@ loff_t
 pcd_lseek(struct file *filp, loff_t offset, int whence)
 {
     loff_t temp;
-
+#if 0
     pr_info("lseek requested \n");
     pr_info("Current value of the file position = %lld\n", filp->f_pos);
 
@@ -89,12 +89,13 @@ pcd_lseek(struct file *filp, loff_t offset, int whence)
     }
 
     pr_info("New value of the file position = %lld\n", filp->f_pos);
-
+#endif
     return filp->f_pos;
 }
 
 ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff_t *f_pos)
 {
+#if 0
     pr_info("Read requested for %zu bytes \n", count);
     pr_info("Current file position = %lld\n", *f_pos);
 
@@ -116,10 +117,13 @@ ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff_t *f_p
 
     /*Return number of bytes which have been successfully read */
     return count;
+#endif
+    return 0;
 }
 
 ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
 {
+#if 0
     pr_info("Write requested for %zu bytes\n", count);
     pr_info("Current file position = %lld\n", *f_pos);
 
@@ -147,20 +151,22 @@ ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff
 
     /*Return number of bytes which have been successfully written */
     return count;
+#endif
+    return 0;
 }
 
 int check_permission(int dev_perm, int acc_mode)
 {
 
-    if (dev_perm == RDWR)
+    if (dev_perm == O_RDWR)
         return 0;
 
     // ensures readonly access
-    if ((dev_perm == RDONLY) && ((acc_mode & FMODE_READ) && !(acc_mode & FMODE_WRITE)))
+    if ((dev_perm == O_RDONLY) && ((acc_mode & FMODE_READ) && !(acc_mode & FMODE_WRITE)))
         return 0;
 
     // ensures writeonly access
-    if ((dev_perm == WRONLY) && ((acc_mode & FMODE_WRITE) && !(acc_mode & FMODE_READ)))
+    if ((dev_perm == O_WRONLY) && ((acc_mode & FMODE_WRITE) && !(acc_mode & FMODE_READ)))
         return 0;
 
     return -EPERM;
@@ -264,10 +270,10 @@ cdev_del:
 class_del:
     for (; i >= 0; i--)
     {
-        devive_destroy(pcdrv_data.class_pcd, pcdrv_data.device_number + i);
+        device_destroy(pcdrv_data.class_pcd, pcdrv_data.device_number + i);
         cdev_del(&pcdrv_data.pcdev_data[i].cdev);
     }
-    class_dxestroy(pcdrv_data.class_pcd);
+    class_destroy(pcdrv_data.class_pcd);
 unreg_chrdev:
     unregister_chrdev_region(pcdrv_data.device_number, NO_OF_DEVICES);
 out:
@@ -281,10 +287,10 @@ static void __exit pcd_driver_cleanup(void)
 
     for (i = 0; i < NO_OF_DEVICES; i++)
     {
-        devive_destroy(pcdrv_data.class_pcd, pcdrv_data.device_number + i);
+        device_destroy(pcdrv_data.class_pcd, pcdrv_data.device_number + i);
         cdev_del(&pcdrv_data.pcdev_data[i].cdev);
     }
-    class_dxestroy(pcdrv_data.class_pcd);
+    class_destroy(pcdrv_data.class_pcd);
 
     unregister_chrdev_region(pcdrv_data.device_number, NO_OF_DEVICES);
 
