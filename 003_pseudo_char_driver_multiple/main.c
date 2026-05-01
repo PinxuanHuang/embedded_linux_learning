@@ -12,6 +12,11 @@
 #define DEV_MEM_SIZE_PCDEV3 1024
 #define DEV_MEM_SIZE_PCDEV4 512
 
+/*permission codes */
+#define RDONLY 0x01
+#define WRONLY 0X10
+#define RDWR 0x11
+
 /* pseudo device's memory */
 char device_buffer_pcdev1[DEV_MEM_SIZE_PCDEV1];
 char device_buffer_pcdev2[DEV_MEM_SIZE_PCDEV2];
@@ -47,13 +52,13 @@ struct pcdrv_private_data pcdrv_data =
                 .buffer = device_buffer_pcdev1,
                 .size = DEV_MEM_SIZE_PCDEV1,
                 .serial_number = "PCDEV1XYZ123",
-                .perm = O_RDONLY},
+                .perm = RDONLY},
 
-            [1] = {.buffer = device_buffer_pcdev2, .size = DEV_MEM_SIZE_PCDEV2, .serial_number = "PCDEV2XYZ123", .perm = O_WRONLY},
+            [1] = {.buffer = device_buffer_pcdev2, .size = DEV_MEM_SIZE_PCDEV2, .serial_number = "PCDEV2XYZ123", .perm = WRONLY},
 
-            [2] = {.buffer = device_buffer_pcdev3, .size = DEV_MEM_SIZE_PCDEV3, .serial_number = "PCDEV3XYZ123", .perm = O_RDWR},
+            [2] = {.buffer = device_buffer_pcdev3, .size = DEV_MEM_SIZE_PCDEV3, .serial_number = "PCDEV3XYZ123", .perm = RDWR},
 
-            [3] = {.buffer = device_buffer_pcdev4, .size = DEV_MEM_SIZE_PCDEV4, .serial_number = "PCDEV4XYZ123", .perm = O_RDWR}
+            [3] = {.buffer = device_buffer_pcdev4, .size = DEV_MEM_SIZE_PCDEV4, .serial_number = "PCDEV4XYZ123", .perm = RDWR}
 
         }};
 
@@ -159,15 +164,15 @@ ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff
 int check_permission(int dev_perm, int acc_mode)
 {
 
-    if (dev_perm == O_RDWR)
+    if (dev_perm == RDWR)
         return 0;
 
     // ensures readonly access
-    if ((dev_perm == O_RDONLY) && ((acc_mode & FMODE_READ) && !(acc_mode & FMODE_WRITE)))
+    if ((dev_perm == RDONLY) && ((acc_mode & FMODE_READ) && !(acc_mode & FMODE_WRITE)))
         return 0;
 
     // ensures writeonly access
-    if ((dev_perm == O_WRONLY) && ((acc_mode & FMODE_WRITE) && !(acc_mode & FMODE_READ)))
+    if ((dev_perm == WRONLY) && ((acc_mode & FMODE_WRITE) && !(acc_mode & FMODE_READ)))
         return 0;
 
     return -EPERM;
