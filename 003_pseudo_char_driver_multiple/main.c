@@ -61,26 +61,28 @@ loff_t
 pcd_lseek(struct file *filp, loff_t offset, int whence)
 {
     loff_t temp;
-#if 0
+    struct pcdev_private_data *pcdev_data = (struct pcdev_private_data *)filp->private_data;
+    int max_size = pcdev_data->size;
+
     pr_info("lseek requested \n");
     pr_info("Current value of the file position = %lld\n", filp->f_pos);
 
     switch (whence)
     {
     case SEEK_SET:
-        if ((offset > DEV_MEM_SIZE) || (offset < 0))
+        if ((offset > max_size) || (offset < 0))
             return -EINVAL;
         filp->f_pos = offset;
         break;
     case SEEK_CUR:
         temp = filp->f_pos + offset;
-        if ((temp > DEV_MEM_SIZE) || (temp < 0))
+        if ((temp > max_size) || (temp < 0))
             return -EINVAL;
         filp->f_pos = temp;
         break;
     case SEEK_END:
-        temp = DEV_MEM_SIZE + offset;
-        if ((temp > DEV_MEM_SIZE) || (temp < 0))
+        temp = max_size + offset;
+        if ((temp > max_size) || (temp < 0))
             return -EINVAL;
         filp->f_pos = temp;
         break;
@@ -89,22 +91,23 @@ pcd_lseek(struct file *filp, loff_t offset, int whence)
     }
 
     pr_info("New value of the file position = %lld\n", filp->f_pos);
-#endif
+
     return filp->f_pos;
 }
 
 ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff_t *f_pos)
 {
-#if 0
+    struct pcdev_private_data *pcdev_data = (struct pcdev_private_data *)filp->private_data;
+    int max_size = pcdev_data->size;
     pr_info("Read requested for %zu bytes \n", count);
     pr_info("Current file position = %lld\n", *f_pos);
 
     /* Adjust the 'count' */
-    if ((*f_pos + count) > DEV_MEM_SIZE)
-        count = DEV_MEM_SIZE - *f_pos;
+    if ((*f_pos + count) > max_size)
+        count = max_size - *f_pos;
 
     /*copy to user */
-    if (copy_to_user(buff, &device_buffer[*f_pos], count))
+    if (copy_to_user(buff, pcdev_data->buffer + (*f_pos), count))
     {
         return -EFAULT;
     }
@@ -117,19 +120,19 @@ ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff_t *f_p
 
     /*Return number of bytes which have been successfully read */
     return count;
-#endif
-    return 0;
 }
 
 ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
 {
-#if 0
+    struct pcdev_private_data *pcdev_data = (struct pcdev_private_data *)filp->private_data;
+    int max_size = pcdev_data->size;
+
     pr_info("Write requested for %zu bytes\n", count);
     pr_info("Current file position = %lld\n", *f_pos);
 
     /* Adjust the 'count' */
-    if ((*f_pos + count) > DEV_MEM_SIZE)
-        count = DEV_MEM_SIZE - *f_pos;
+    if ((*f_pos + count) > max_size)
+        count = max_size - *f_pos;
 
     if (!count)
     {
@@ -138,7 +141,7 @@ ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff
     }
 
     /*copy from user */
-    if (copy_from_user(&device_buffer[*f_pos], buff, count))
+    if (copy_from_user(pcdev_data->buffer + (*f_pos), buff, count))
     {
         return -EFAULT;
     }
@@ -151,8 +154,6 @@ ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff
 
     /*Return number of bytes which have been successfully written */
     return count;
-#endif
-    return 0;
 }
 
 int check_permission(int dev_perm, int acc_mode)
