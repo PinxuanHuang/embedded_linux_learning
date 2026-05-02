@@ -2,6 +2,11 @@
 #include <linux/platform_device.h>
 #include "platform.h"
 
+void pcdev_release(struct device *dev)
+{
+    pr_info("Device release\n");
+}
+
 struct pcdev_platform_data pcdev_pdata[2] =
     {
         /* data */
@@ -13,14 +18,18 @@ struct platform_device platform_pcdev_1 =
         /* data */
         .name = "pseudo-char-device",
         .id = 0,
-        .dev = {.platform_data = &pcdev_pdata[0]}};
+        .dev = {
+            .platform_data = &pcdev_pdata[0],
+            .release = pcdev_release}};
 
 struct platform_device platform_pcdev_2 =
     {
         /* data */
         .name = "pseudo-char_device",
         .id = 1,
-        .dev = {.platform_data = &pcdev_pdata[1]}};
+        .dev = {
+            .platform_data = &pcdev_pdata[1],
+            .release = pcdev_release}};
 
 static int __init pcdev_platform_init(void)
 {
@@ -35,6 +44,7 @@ static void __exit pcdev_platform_exit(void)
 {
     platform_device_unregister(&platform_pcdev_1);
     platform_device_unregister(&platform_pcdev_2);
+    pr_info("Device setup module removed\n");
 }
 
 module_init(pcdev_platform_init);
