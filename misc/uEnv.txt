@@ -1,0 +1,5 @@
+bootargs=console=ttyO0,115200 root=/dev/mmcblk0p2 rw
+load mmc 0:1 0x82000000 uImage
+load mmc 0:1 0x88000000 xxx.dtb
+bootm 0x82000000 - 0x88000000
+bootcmd=<replace to all of above>
