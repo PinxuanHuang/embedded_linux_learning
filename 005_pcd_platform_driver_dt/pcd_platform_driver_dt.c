@@ -225,7 +225,7 @@ struct file_operations pcd_fops =
         .owner = THIS_MODULE};
 
 /*Called when the device is removed from the system */
-int pcd_platform_driver_remove(struct platform_device *pdev)
+void pcd_platform_driver_remove(struct platform_device *pdev)
 {
 
     struct pcdev_private_data *dev_data = dev_get_drvdata(&pdev->dev);
@@ -240,7 +240,7 @@ int pcd_platform_driver_remove(struct platform_device *pdev)
 
     pr_info("A device is removed\n");
 
-    return 0;
+    return;
 }
 
 struct pcdev_platform_data *pcdev_get_platform_from_dt(struct device *dev)

@@ -17,4 +17,3 @@ module_exit(helloworld_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("GARYHUANG");
 MODULE_DESCRIPTION("A simple hello world kernel module");
-MODULE_INFO("RPI4");

@@ -223,7 +223,7 @@ struct file_operations pcd_fops =
         .owner = THIS_MODULE};
 
 /*Called when the device is removed from the system */
-int pcd_platform_driver_remove(struct platform_device *pdev)
+void pcd_platform_driver_remove(struct platform_device *pdev)
 {
 
     struct pcdev_private_data *dev_data = dev_get_drvdata(&pdev->dev);
@@ -238,7 +238,7 @@ int pcd_platform_driver_remove(struct platform_device *pdev)
 
     pr_info("A device is removed\n");
 
-    return 0;
+    return;
 }
 
 /*Called when matched platform device is found */
@@ -354,7 +354,7 @@ static int __init pcd_platform_driver_init(void)
     }
 
     /*Create device class under /sys/class */
-    pcdrv_data.class_pcd = class_create(THIS_MODULE, "pcd_class");
+    pcdrv_data.class_pcd = class_create("pcd_class");
     if (IS_ERR(pcdrv_data.class_pcd))
     {
         pr_err("Class creation failed\n");
