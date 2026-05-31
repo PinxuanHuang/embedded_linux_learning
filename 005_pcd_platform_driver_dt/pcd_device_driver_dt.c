@@ -263,6 +263,8 @@ struct pcdev_platform_data *pcdev_get_platform_from_dt(struct device *dev)
     return pdata;
 }
 
+struct of_device_id org_pcdev_dt_match[];
+
 /*Called when matched platform device is found */
 int pcd_platform_driver_probe(struct platform_device *pdev)
 {
@@ -272,30 +274,32 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
 
     struct pcdev_platform_data *pdata;
 
-    struct of_device_id *match;
+    struct device *dev = pdev->dev;
+
+    const struct of_device_id *match;
 
     int driver_data;
 
     pr_info("A device is detected\n");
 
-    pdata = pcdev_get_platform_from_dt(&pdev->dev);
-    if (IS_ERR(pdata))
-        return PTR_ERR(pdata);
-
-    if (!pdata)
+    match = of_match_device(of_match_ptr(org_pcdev_dt_match), dev);
+    if (match)
     {
-        pdata = (struct pcdev_platform_data *)dev_get_platdata(&pdev->dev);
-        if (!pdata)
-        {
-            pr_info("No platform data available\n");
-            return -EINVAL;
-        }
-        driver_data = pdev->id_entry->driver_data;
+        pdata = pcdev_get_platform_from_dt(dev);
+        if (IS_ERR(pdata))
+            return PTR_ERR(pdata);
+        driver_data = (int)match->data;
     }
     else
     {
-        match = of_match_device(pdev->dev.driver->of_match_table, &pdev->dev);
-        driver_data = (int)match->data;
+        pdata = (struct pcdev_platform_data *)dev_get_platdata(dev);
+        driver_data = pdev->id_entry->driver_data;
+    }
+
+    if (!pdata)
+    {
+        pr_info("No platform data available\n");
+        return -EINVAL;
     }
 
     /*Dynamically allocate memory for the device private data  */
@@ -330,7 +334,7 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     }
 
     /* Get the device number */
-    dev_data->dev_num = pcdrv_data.device_num_base + pdev->id;
+    dev_data->dev_num = pcdrv_data.device_num_base + pcdrv_data.total_devices;
 
     /*Do cdev init and cdev add */
     cdev_init(&dev_data->cdev, &pcd_fops);
@@ -344,7 +348,7 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     }
 
     /*Create device file for the detected platform device */
-    pcdrv_data.device_pcd = device_create(pcdrv_data.class_pcd, NULL, dev_data->dev_num, NULL, "pcdev-%d", pdev->id);
+    pcdrv_data.device_pcd = device_create(pcdrv_data.class_pcd, dev, dev_data->dev_num, NULL, "pcdev-%d", pcdrv_data.total_devices);
     if (IS_ERR(pcdrv_data.device_pcd))
     {
         pr_err("Device create failed\n");
@@ -378,6 +382,10 @@ struct of_device_id org_pcdev_dt_match[] =
         {} /*Null termination */
 };
 
+/*
+If CONFIG_OF isn't enabled,
+it's no need to specify the of_match_table
+*/
 struct platform_driver pcd_platform_driver =
     {
         .probe = pcd_platform_driver_probe,
@@ -385,7 +393,7 @@ struct platform_driver pcd_platform_driver =
         .id_table = pcdevs_ids,
         .driver = {
             .name = "pseudo-char-device",
-            .of_match_table = org_pcdev_dt_match}
+            .of_match_table = of_match_ptr(org_pcdev_dt_match)}
 
 };
 
