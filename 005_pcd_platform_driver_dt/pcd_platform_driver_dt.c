@@ -274,7 +274,7 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
 
     struct pcdev_platform_data *pdata;
 
-    struct device *dev = pdev->dev;
+    struct device *dev = &pdev->dev;
 
     const struct of_device_id *match;
 
@@ -375,10 +375,10 @@ struct platform_device_id pcdevs_ids[] =
 
 struct of_device_id org_pcdev_dt_match[] =
     {
-        [0] = {.compatible = "pcdev-A1x", .data = PCDEVA1X},
-        [1] = {.compatible = "pcdev-B1x", .data = PCDEVB1X},
-        [2] = {.compatible = "pcdev-C1x", .data = PCDEVC1X},
-        [3] = {.compatible = "pcdev-D1x", .data = PCDEVD1X},
+        [0] = {.compatible = "pcdev-A1x", .data = (void *)PCDEVA1X},
+        [1] = {.compatible = "pcdev-B1x", .data = (void *)PCDEVB1X},
+        [2] = {.compatible = "pcdev-C1x", .data = (void *)PCDEVC1X},
+        [3] = {.compatible = "pcdev-D1x", .data = (void *)PCDEVD1X},
         {} /*Null termination */
 };
 
