@@ -216,6 +216,14 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
 
     pcdrv_data.total_devices++;
 
+    /* create the attr file */
+    ret = pcd_sysfs_create_files(pcdrv_data.device_pcd);
+    if (ret)
+    {
+        device_destroy(pcdrv_data.class_pcd, dev_data->dev_num);
+        return ret;
+    }
+
     pr_info("Probe was successful\n");
 
     return 0;
