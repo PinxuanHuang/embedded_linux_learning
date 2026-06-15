@@ -1,5 +1,5 @@
-obj-m:= pcd_sysfs.o
-pcd_sysfs-objs += pcd_platform_driver_dt.o pcd_syscalls.o
+obj-m := pcd_sysfs.o
+pcd_sysfs-objs += pcd_platform_driver_dt_sysfs.o pcd_syscalls.o
 MAKE=make
 ARCH=arm64
 CROSS_COMPILE=arm-linux-gnueabihf-

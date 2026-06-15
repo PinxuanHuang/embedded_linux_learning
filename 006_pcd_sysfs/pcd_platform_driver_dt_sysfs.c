@@ -56,8 +56,8 @@ ssize_t store_max_size(struct device *dev, struct device_attribute *attr, const 
     return count;
 }
 
-static DEVICE_ATTR(max_size, S_IRUGO | S_IWUSR, max_size_show, max_size_store);
-static DEVICE_ATTR(serial_num, S_IRUGO, serial_num_show, NULL);
+static DEVICE_ATTR(max_size, S_IRUGO | S_IWUSR, show_max_size, store_max_size);
+static DEVICE_ATTR(serial_num, S_IRUGO, show_serial_num, NULL);
 
 struct attribute *pcd_attrs[] =
     {
